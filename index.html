@@ -2,7 +2,7 @@
 <html lang="sq">
 <head>
   <meta charset="UTF-8" />
-  <title>Kujtesa me Firebase</title>
+  <title>Kujtesa (Vetëm localStorage)</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -11,12 +11,10 @@
     input[type="text"], input[type="date"] { padding: 5px; margin: 5px; }
     button { padding: 5px 10px; margin: 2px; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <h2>Kujtesa me Firebase</h2>
+  <h2>Kujtesa - Vetëm në Pajisjen tënde</h2>
 
   <div>
     <input type="text" id="komitenti" placeholder="Komitenti" />
@@ -38,92 +36,78 @@
     <tbody></tbody>
   </table>
 
-<script>
-  // Vendos këtu config tënd nga Firebase
-  const firebaseConfig = {
-    apiKey: "API_KEY_YT",
-    authDomain: "PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "PROJECT_ID",
-    storageBucket: "PROJECT_ID.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-  };
+  <script>
+    let nr = 1;
 
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
+    window.onload = function() {
+      const teDhenat = JSON.parse(localStorage.getItem("kujtesat")) || [];
+      teDhenat.forEach(obj => {
+        shtoRreshtNgaStorage(obj.komitenti, obj.komenti, obj.data);
+      });
+    };
 
-  let nr = 1;
-  let kujtesat = [];
+    function shtoRresht() {
+      const komitenti = document.getElementById("komitenti").value.trim();
+      const komenti = document.getElementById("komenti").value.trim();
+      const data = document.getElementById("data").value;
 
-  window.onload = function() {
-    ngarkoNgaFirebase();
-  };
+      if (!komitenti || !komenti || !data) {
+        alert("Ju lutem plotësoni të gjitha fushat!");
+        return;
+      }
 
-  function ngarkoNgaFirebase() {
-    database.ref('kujtesat').on('value', snapshot => {
-      kujtesat = snapshot.val() || [];
-      rifreskoTabela();
-    });
-  }
+      shtoRreshtNgaStorage(komitenti, komenti, data);
+      ruajNeStorage();
 
-  function rifreskoTabela() {
-    const tbody = document.querySelector("#tabela tbody");
-    tbody.innerHTML = "";
-    nr = 1;
-    kujtesat.forEach((obj, index) => {
-      const rreshti = document.createElement("tr");
+      document.getElementById("komitenti").value = "";
+      document.getElementById("komenti").value = "";
+      document.getElementById("data").value = "";
+    }
+
+    function shtoRreshtNgaStorage(komitenti, komenti, data) {
+      const tabela = document.querySelector("#tabela tbody");
+      const rreshti = tabela.insertRow();
       rreshti.innerHTML = `
         <td>${nr++}</td>
-        <td contenteditable="true" oninput="ndryshoKujtesen(${index}, 0, this.innerText)">${obj.komitenti}</td>
-        <td contenteditable="true" oninput="ndryshoKujtesen(${index}, 1, this.innerText)">${obj.komenti}</td>
-        <td contenteditable="true" oninput="ndryshoKujtesen(${index}, 2, this.innerText)">${obj.data}</td>
-        <td><button onclick="fshiRresht(${index})">Fshi</button></td>
+        <td contenteditable="true">${komitenti}</td>
+        <td contenteditable="true">${komenti}</td>
+        <td contenteditable="true">${data}</td>
+        <td><button onclick="fshiRresht(this)">Fshi</button></td>
       `;
-      tbody.appendChild(rreshti);
-    });
-  }
-
-  function shtoRresht() {
-    const komitenti = document.getElementById("komitenti").value.trim();
-    const komenti = document.getElementById("komenti").value.trim();
-    const data = document.getElementById("data").value;
-
-    if (!komitenti || !komenti || !data) {
-      alert("Ju lutem plotësoni të gjitha fushat!");
-      return;
     }
 
-    kujtesat.push({ komitenti, komenti, data });
-    ruajNeFirebase();
-
-    // Pastro fushat
-    document.getElementById("komitenti").value = "";
-    document.getElementById("komenti").value = "";
-    document.getElementById("data").value = "";
-  }
-
-  function ruajNeFirebase() {
-    database.ref('kujtesat').set(kujtesat);
-  }
-
-  function ndryshoKujtesen(index, fushë, vlera) {
-    if (fushë === 0) kujtesat[index].komitenti = vlera;
-    else if (fushë === 1) kujtesat[index].komenti = vlera;
-    else if (fushë === 2) kujtesat[index].data = vlera;
-    ruajNeFirebase();
-  }
-
-  function fshiRresht(index) {
-    const password = prompt("Shkruani fjalëkalimin për të fshirë:");
-    if (password === "1234") {
-      kujtesat.splice(index, 1);
-      ruajNeFirebase();
-    } else {
-      alert("Fjalëkalim i gabuar! Nuk mund të fshihet.");
+    function fshiRresht(btn) {
+      const password = prompt("Shkruani fjalëkalimin për të fshirë:");
+      if (password === "1234") {
+        const rreshti = btn.parentNode.parentNode;
+        rreshti.remove();
+        rifreskoNumrat();
+        ruajNeStorage();
+      } else {
+        alert("Fjalëkalim i gabuar! Nuk mund të fshihet.");
+      }
     }
-  }
-</script>
+
+    function rifreskoNumrat() {
+      const rreshtat = document.querySelectorAll("#tabela tbody tr");
+      nr = 1;
+      rreshtat.forEach(r => {
+        r.cells[0].innerText = nr++;
+      });
+    }
+
+    function ruajNeStorage() {
+      const rreshtat = document.querySelectorAll("#tabela tbody tr");
+      const teDhenat = [];
+      rreshtat.forEach(r => {
+        const komitenti = r.cells[1].innerText;
+        const komenti = r.cells[2].innerText;
+        const data = r.cells[3].innerText;
+        teDhenat.push({ komitenti, komenti, data });
+      });
+      localStorage.setItem("kujtesat", JSON.stringify(teDhenat));
+    }
+  </script>
 
 </body>
 </html>
