@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8">
+  <title>Reminder - Kujtesa</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    input[type="text"], input[type="date"] { padding: 5px; margin: 5px; }
+    button { padding: 5px 10px; margin: 2px; }
+  </style>
+</head>
+<body>
+
+  <h2>Kujtesa - Lista</h2>
+
+  <div>
+    <input type="text" id="komitenti" placeholder="Komitenti">
+    <input type="text" id="komenti" placeholder="Komenti">
+    <input type="date" id="data">
+    <button onclick="shtoRresht()">Shto</button>
+  </div>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Nr</th>
+        <th>Komitenti</th>
+        <th>Komenti</th>
+        <th>Data</th>
+        <th>Veprime</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let nr = 1;
+
+    // Ngarko të dhënat nga localStorage kur hap faqen
+    window.onload = function() {
+      const teDhenat = JSON.parse(localStorage.getItem("kujtesat")) || [];
+      teDhenat.forEach(obj => {
+        shtoRreshtNgaStorage(obj.komitenti, obj.komenti, obj.data);
+      });
+    };
+
+    function shtoRresht() {
+      const komitenti = document.getElementById("komitenti").value;
+      const komenti = document.getElementById("komenti").value;
+      const data = document.getElementById("data").value;
+
+      if (!komitenti || !komenti || !data) {
+        alert("Ju lutem plotësoni të gjitha fushat!");
+        return;
+      }
+
+      shtoRreshtNgaStorage(komitenti, komenti, data);
+      ruajNeStorage();
+
+      // Pastro fushat
+      document.getElementById("komitenti").value = "";
+      document.getElementById("komenti").value = "";
+      document.getElementById("data").value = "";
+    }
+
+    function shtoRreshtNgaStorage(komitenti, komenti, data) {
+      const tabela = document.querySelector("#tabela tbody");
+      const rreshti = tabela.insertRow();
+      rreshti.innerHTML = `
+        <td>${nr++}</td>
+        <td contenteditable="true">${komitenti}</td>
+        <td contenteditable="true">${komenti}</td>
+        <td contenteditable="true">${data}</td>
+        <td><button onclick="fshiRresht(this)">Fshi</button></td>
+      `;
+    }
+
+    function fshiRresht(btn) {
+      const rreshti = btn.parentNode.parentNode;
+      rreshti.remove();
+      rifreskoNumrat();
+      ruajNeStorage();
+    }
+
+    function rifreskoNumrat() {
+      const rreshtat = document.querySelectorAll("#tabela tbody tr");
+      nr = 1;
+      rreshtat.forEach(r => {
+        r.cells[0].innerText = nr++;
+      });
+    }
+
+    function ruajNeStorage() {
+      const rreshtat = document.querySelectorAll("#tabela tbody tr");
+      const teDhenat = [];
+
+      rreshtat.forEach(r => {
+        const komitenti = r.cells[1].innerText;
+        const komenti = r.cells[2].innerText;
+        const data = r.cells[3].innerText;
+        teDhenat.push({ komitenti, komenti, data });
+      });
+
+      localStorage.setItem("kujtesat", JSON.stringify(teDhenat));
+    }
+  </script>
+
+</body>
+</html>
