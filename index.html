@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sq">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Reminder - Kujtesa</title>
   <style>
     body { font-family: Arial; padding: 20px; }
@@ -17,9 +17,9 @@
   <h2>Kujtesa - Lista</h2>
 
   <div>
-    <input type="text" id="komitenti" placeholder="Komitenti">
-    <input type="text" id="komenti" placeholder="Komenti">
-    <input type="date" id="data">
+    <input type="text" id="komitenti" placeholder="Komitenti" />
+    <input type="text" id="komenti" placeholder="Komenti" />
+    <input type="date" id="data" />
     <button onclick="shtoRresht()">Shto</button>
   </div>
 
@@ -40,7 +40,7 @@
     let nr = 1;
 
     // Ngarko të dhënat nga localStorage kur hap faqen
-    window.onload = function() {
+    window.onload = function () {
       const teDhenat = JSON.parse(localStorage.getItem("kujtesat")) || [];
       teDhenat.forEach(obj => {
         shtoRreshtNgaStorage(obj.komitenti, obj.komenti, obj.data);
@@ -79,10 +79,15 @@
     }
 
     function fshiRresht(btn) {
-      const rreshti = btn.parentNode.parentNode;
-      rreshti.remove();
-      rifreskoNumrat();
-      ruajNeStorage();
+      const password = prompt("Shkruani fjalëkalimin për të fshirë:");
+      if (password === "1234") {
+        const rreshti = btn.parentNode.parentNode;
+        rreshti.remove();
+        rifreskoNumrat();
+        ruajNeStorage();
+      } else {
+        alert("Fjalëkalim i gabuar! Nuk mund të fshihet.");
+      }
     }
 
     function rifreskoNumrat() {
